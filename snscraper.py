@@ -39,6 +39,7 @@ def search(text, username, since, until, retweet, replies):
 
 # Created a list to append all tweet attributes(data)
 attributes_container = []
+replies = []
 positive = 0
 negative = 0
 neutral = 0
@@ -54,7 +55,12 @@ query = search('', str(username), str(since), '', 'y', 'y')
 for i, tweet in enumerate(sntwitter.TwitterSearchScraper(query).get_items()):
 
     attributes_container.append([tweet.date, tweet.id, tweet.rawContent, tweet.user.username, tweet.replyCount,
-                                 tweet.retweetCount, tweet.likeCount, tweet.quoteCount, tweet.inReplyToTweetId])
+                                 tweet.retweetCount, tweet.likeCount, tweet.quoteCount, tweet.inReplyToTweetId,
+                                 tweet.conversationId])
+
+    for j, reply in enumerate(sntwitter.TwitterSearchScraper(f'conversation_id:{tweet.conversationId}').get_items()):
+        replies.append([reply.date, reply.id, reply.rawContent, reply.user.username, reply.replyCount,
+                        reply.retweetCount, reply.likeCount, reply.quoteCount, reply.inReplyToTweetId])
 
     tweet_list.append(tweet.rawContent)
     analysis = TextBlob(tweet.rawContent)
@@ -81,6 +87,9 @@ for i, tweet in enumerate(sntwitter.TwitterSearchScraper(query).get_items()):
 # Creating a dataframe from the tweets list above
 tweets_df = pd.DataFrame(attributes_container, columns=['DateTime', 'TweetId', 'Text', 'Username', 'ReplyCount',
                                                         'RetweetCount', 'LikeCount', 'QuoteCount', '-'])
+
+reply_df = pd.DataFrame(replies, columns=['DateTime', 'TweetId', 'Text', 'Username', 'ReplyCount',
+                                          'RetweetCount', 'LikeCount', 'QuoteCount', '-'])
 
 # Creating a dataframe from the tweets list above
 print(attributes_container)
